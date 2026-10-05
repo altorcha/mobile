@@ -12,7 +12,8 @@ class PreferencesHelper(context: Context) {
     }
 
     fun saveLastMatricula(matricula: String) {
-        prefs.edit().putString(KEY_LAST_MATRICULA, matricula).apply()
+        // commit() garantiza que se guarde de forma síncrona en el disco antes de cerrar la app
+        prefs.edit().putString(KEY_LAST_MATRICULA, matricula).commit()
     }
 
     fun getLastMatricula(): String {

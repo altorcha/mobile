@@ -21,26 +21,33 @@ fun FormScreen(
     val context = LocalContext.current
     val prefsHelper = remember { PreferencesHelper(context) }
 
-    // Estados de UI (Matrícula recuperada de SharedPreferences)
-    var matricula by remember { mutableStateOf(prefsHelper.getLastMatricula()) }
+    // Estados de UI
+    var matricula by remember { mutableStateOf("") }
     var nombre by remember { mutableStateOf("") }
 
-    // Opciones y estado para menú desplegable de carreras
+    // Cargar la matrícula guardada en SharedPreferences al iniciar la pantalla
+    LaunchedEffect(Unit) {
+        val guardada = prefsHelper.getLastMatricula()
+        if (guardada.isNotEmpty()) {
+            matricula = guardada
+        }
+    }
+
+    // Opciones del Dropdown de Carreras
     val carreras = listOf(
         "Ingeniería de Software",
+        "Ingeniería en Sistemas Computacionales",
         "Ingeniería Civil",
-        "Ingeniería en Procesos Industriales",
-        "Ingeniería Geodésica",
-        "Ingeniería en Nanotecnología"
+        "Ingeniería Industrial"
     )
     var expandedDropdown by remember { mutableStateOf(false) }
     var selectedCarrera by remember { mutableStateOf(carreras[0]) }
 
-    // Opciones y estado para RadioButtons (Turno)
+    // Opciones de RadioButtons de Turno
     val turnos = listOf("Matutino", "Vespertino")
     var selectedTurno by remember { mutableStateOf(turnos[0]) }
 
-    // Estado para Switch (Estatus)
+    // Switch de Estatus
     var isActivo by remember { mutableStateOf(true) }
 
     Scaffold(
@@ -67,7 +74,7 @@ fun FormScreen(
                 style = MaterialTheme.typography.titleLarge
             )
 
-            // 1. Matrícula
+            // 1. Matrícula (se autocompleta si ya había una guardada)
             OutlinedTextField(
                 value = matricula,
                 onValueChange = { matricula = it },
@@ -85,7 +92,7 @@ fun FormScreen(
                 singleLine = true
             )
 
-            // 3. Carrera (Menú Desplegable)
+            // 3. Menú Desplegable (ExposedDropdownMenu) para Carrera
             ExposedDropdownMenuBox(
                 expanded = expandedDropdown,
                 onExpandedChange = { expandedDropdown = !expandedDropdown }
@@ -116,7 +123,7 @@ fun FormScreen(
                 }
             }
 
-            // 4. Turno (RadioButtons)
+            // 4. RadioButtons para Turno
             Text(text = "Selecciona Turno:", style = MaterialTheme.typography.titleMedium)
             Row(modifier = Modifier.fillMaxWidth()) {
                 turnos.forEach { turno ->
@@ -138,7 +145,7 @@ fun FormScreen(
                 }
             }
 
-            // 5. Estatus (Switch)
+            // 5. Switch para Estatus
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -156,14 +163,14 @@ fun FormScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 6. Botón de Registro
+            // 6. Botón de Registro y Guardado
             Button(
                 onClick = {
                     if (matricula.isNotBlank() && nombre.isNotBlank()) {
-                        // Persistir matrícula en SharedPreferences
-                        prefsHelper.saveLastMatricula(matricula)
-                        // Disparar navegación con los datos capturados
-                        onNavigateToDetail(matricula, nombre, selectedCarrera, selectedTurno, isActivo)
+                        // Guarda inmediatamente en SharedPreferences
+                        prefsHelper.saveLastMatricula(matricula.trim())
+                        // Envía los datos hacia la pantalla de detalle
+                        onNavigateToDetail(matricula.trim(), nombre.trim(), selectedCarrera, selectedTurno, isActivo)
                     } else {
                         Toast.makeText(context, "Por favor completa la matrícula y el nombre", Toast.LENGTH_SHORT).show()
                     }
