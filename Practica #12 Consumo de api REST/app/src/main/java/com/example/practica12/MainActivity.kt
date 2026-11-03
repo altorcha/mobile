@@ -3,45 +3,36 @@ package com.example.practica12
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.practica12.ui.theme.Practica12Theme
+import androidx.activity.viewModels
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.practica12.presentation.*
 
 class MainActivity : ComponentActivity() {
+    private val viewModel: PokeViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            Practica12Theme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+            val navController = rememberNavController()
+            NavHost(navController = navController, startDestination = "tipos") {
+                composable("tipos") {
+                    TiposScreen(viewModel) { id ->
+                        navController.navigate("pokemons/$id")
+                    }
+                }
+                composable("pokemons/{id}") { backStackEntry ->
+                    val id = backStackEntry.arguments?.getString("id") ?: ""
+                    PokemonsByTypeScreen(viewModel, id) { pokeId ->
+                        navController.navigate("detalle/$pokeId")
+                    }
+                }
+                composable("detalle/{id}") { backStackEntry ->
+                    val id = backStackEntry.arguments?.getString("id") ?: ""
+                    PokemonDetailScreen(viewModel, id)
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    Practica12Theme {
-        Greeting("Android")
     }
 }
